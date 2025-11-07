@@ -1,0 +1,30 @@
+// 1. Use Database
+use college
+
+// 2. Insert Documents
+db.students.insertOne({ roll: 1, name: "Ravi", marks: 85, branch: "CS" })
+db.students.insertMany([
+  { roll: 2, name: "Sneha", marks: 92, branch: "IT" },
+  { roll: 3, name: "Amit", marks: 75, branch: "CS" },
+  { roll: 4, name: "Priya", marks: 60, branch: "ENTC" }
+])
+
+// 3. Read Documents
+db.students.find()                           // fetch all
+db.students.find({ branch: "CS" })           // filter condition
+db.students.find({ marks: { $gt: 80 } })     // logical operator $gt
+db.students.find({ $or: [{ branch: "CS" }, { marks: { $lt: 70 } }] }) // OR condition
+
+// 4. Update Document
+db.students.updateOne({ roll: 3 }, { $set: { marks: 82 } })
+db.students.updateMany({ branch: "CS" }, { $inc: { marks: 5 } })
+
+// 5. Save Method (Insert if not exist / Update if exist)
+db.students.save({ roll: 5, name: "Kiran", marks: 88, branch: "IT" })
+
+// 6. Delete Document
+db.students.deleteOne({ roll: 4 })
+db.students.deleteMany({ marks: { $lt: 70 } })
+
+// 7. Display Final Collection
+db.students.find().pretty()
