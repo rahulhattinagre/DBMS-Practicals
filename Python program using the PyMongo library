@@ -1,0 +1,27 @@
+from pymongo import MongoClient
+
+# Step 1: Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["school"]
+students = db["students"]
+
+# Step 2: Insert a new student
+students.insert_one({"roll_no": 4, "name": "Priya", "marks": 88})
+
+# Step 3: Display all students
+print("All Students:")
+for s in students.find():
+    print(s)
+
+# Step 4: Update a student's marks
+students.update_one({"roll_no": 2}, {"$set": {"marks": 95}})
+print("Updated Sneha's Marks")
+
+# Step 5: Delete a student
+students.delete_one({"roll_no": 3})
+print("Deleted Amit")
+
+# Step 6: Display final records
+print("Final Students List:")
+for s in students.find():
+    print(s)
