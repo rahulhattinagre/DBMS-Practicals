@@ -1,0 +1,28 @@
+// Insert Sample Data
+db.books.insertMany([
+  { title: "MongoDB Basics", category: "Database", copies: 5 },
+  { title: "Learning Python", category: "Programming", copies: 8 },
+  { title: "Advanced MongoDB", category: "Database", copies: 7 },
+  { title: "Java for Beginners", category: "Programming", copies: 10 },
+  { title: "Data Science Handbook", category: "Data Science", copies: 6 }
+])
+
+// Map Function → emit category and number of copies
+var mapFunction = function() {
+  emit(this.category, this.copies);
+};
+
+// Reduce Function → sum copies per category
+var reduceFunction = function(key, values) {
+  return Array.sum(values);
+};
+
+// Run MapReduce
+db.books.mapReduce(
+  mapFunction,
+  reduceFunction,
+  { out: "category_summary" }
+)
+
+// View results
+db.category_summary.find()
