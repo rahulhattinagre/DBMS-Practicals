@@ -1,0 +1,56 @@
+BEGIN 
+    EXECUTE IMMEDIATE 'DROP TABLE N_RollCall'; 
+EXCEPTION 
+    WHEN OTHERS THEN NULL; 
+END; 
+/ 
+CREATE TABLE O_RollCall ( 
+    RollNo NUMBER PRIMARY KEY, 
+    StudentName VARCHAR2(50), 
+    A endanceStatus VARCHAR2(10) 
+); 
+CREATE TABLE N_RollCall ( 
+    RollNo NUMBER PRIMARY KEY, 
+    StudentName VARCHAR2(50), 
+    A endanceStatus VARCHAR2(10) 
+); 
+INSERT INTO O_RollCall VALUES (101, 'Rahul', 'Present'); 
+INSERT INTO O_RollCall VALUES (102, 'Neha', 'Absent'); 
+INSERT INTO O_RollCall VALUES (103, 'Sahil', 'Present'); 
+INSERT INTO N_RollCall VALUES (102, 'Neha', 'Present');  -- already exists, should skip 
+INSERT INTO N_RollCall VALUES (103, 'Sahil', 'Present'); -- already exists, should skip 
+INSERT INTO N_RollCall VALUES (104, 'Tejas', 'Absent');  -- new 
+INSERT INTO N_RollCall VALUES (105, 'Amit', 'Present');  -- new 
+COMMIT; 
+SET SERVEROUTPUT ON; 
+DECLARE 
+    CURSOR c_new_record(p_rollno N_RollCall.RollNo%TYPE) IS 
+        SELECT RollNo, StudentName, A endanceStatus 
+        FROM N_RollCall 
+        WHERE RollNo = p_rollno; 
+ 
+    v_rollno N_RollCall.RollNo%TYPE; 
+    v_name N_RollCall.StudentName%TYPE; 
+    v_status N_RollCall.A endanceStatus%TYPE; 
+BEGIN 
+    FOR rec IN (SELECT RollNo FROM N_RollCall) LOOP 
+        DECLARE 
+            v_count NUMBER; 
+        BEGIN 
+            SELECT COUNT(*) INTO v_count FROM O_RollCall WHERE RollNo = rec.RollNo; 
+            IF v_count = 0 THEN 
+                OPEN c_new_record(rec.RollNo); 
+                FETCH c_new_record INTO v_rollno, v_name, v_status; 
+                INSERT INTO O_RollCall (RollNo, StudentName, A endanceStatus) 
+                VALUES (v_rollno, v_name, v_status); 
+                CLOSE c_new_record; 
+                DBMS_OUTPUT.PUT_LINE('Inserted RollNo: ' || v_rollno || ' (' || v_name || ')'); 
+            ELSE 
+                DBMS_OUTPUT.PUT_LINE('Skipped RollNo: ' || rec.RollNo || ' (Already Exists)'); 
+            END IF; 
+        END; 
+    END LOOP; 
+    DBMS_OUTPUT.PUT_LINE('Merge Completed Successfully!'); 
+END; 
+/ 
+SELECT * FROM O_RollCall;
