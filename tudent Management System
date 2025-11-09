@@ -1,0 +1,83 @@
+-- Create Database 
+CREATE DATABASE IF NOT EXISTS StudentDB; 
+USE StudentDB; 
+ -- 1. Create Table: Department 
+CREATE TABLE Department ( 
+    dept_id INT AUTO_INCREMENT PRIMARY KEY, 
+    dept_name VARCHAR(50) NOT NULL UNIQUE 
+); 
+ -- 2. Create Table: Student 
+CREATE TABLE Student ( 
+    student_id INT AUTO_INCREMENT PRIMARY KEY, 
+    student_name VARCHAR(50) NOT NULL, 
+    gender ENUM('Male','Female') NOT NULL, 
+    dob DATE, 
+    dept_id INT, 
+    email VARCHAR(100) UNIQUE, 
+    CONSTRAINT _dept FOREIGN KEY (dept_id) REFERENCES Department(dept_id) 
+); 
+ -- 3. Create Table: Course 
+CREATE TABLE Course ( 
+    course_id INT AUTO_INCREMENT PRIMARY KEY, 
+    course_name VARCHAR(100) NOT NULL, 
+    credits INT CHECK (credits BETWEEN 1 AND 6) 
+); 
+ -- 4. Create Table: Enrollment 
+CREATE TABLE Enrollment ( 
+    enroll_id INT AUTO_INCREMENT PRIMARY KEY, 
+student_id INT, 
+course_id INT, 
+enroll_date DATE DEFAULT (CURRENT_DATE), 
+grade CHAR(2), 
+CONSTRAINT _student FOREIGN KEY (student_id) REFERENCES Student(student_id), 
+CONSTRAINT _course FOREIGN KEY (course_id) REFERENCES Course(course_id) 
+); -- 5. Create a View: StudentView 
+CREATE VIEW StudentView AS 
+SELECT s.student_id, s.student_name, d.dept_name, s.email 
+FROM Student s 
+JOIN Department d ON s.dept_id = d.dept_id; -- 6. Create an Index on Student name 
+CREATE INDEX idx_student_name ON Student(student_name); -- 7. Create a Sequence (simulate using AUTO_INCREMENT in MySQL) -- MySQL doesn’t have real SEQUENCE object like Oracle. -- But you can simulate using AUTO_INCREMENT (already done above). -- 8. Create a Synonym (not supported in MySQL, so we use ALIAS via VIEW) 
+CREATE VIEW DeptAlias AS SELECT * FROM Department; -- Insert Departments 
+INSERT INTO Department (dept_name) VALUES  
+('Computer Engineering'), ('Informa on Technology'), ('Electronics'); -- Insert Students 
+INSERT INTO Student (student_name, gender, dob, dept_id, email) 
+VALUES 
+('Sahil Sangle', 'Male', '2003-04-15', 1, 'sahil@gmail.com'), 
+('Adi Pa l', 'Female', '2002-11-20', 2, 'adi@gmail.com'), 
+('Rohan More', 'Male', '2003-01-05', 1, 'rohan@gmail.com'); -- Insert Courses 
+INSERT INTO Course (course_name, credits) 
+VALUES 
+('Database Systems', 4), 
+('Computer Networks', 3), 
+('Web Technologies', 3); -- Insert Enrollments 
+INSERT INTO Enrollment (student_id, course_id, grade) 
+VALUES 
+(1, 1, 'A'), 
+(2, 2, 'B'), 
+(3, 1, 'A'), 
+(1, 3, 'A'); -- 1. Display all students with their department names 
+SELECT s.student_name, d.dept_name  
+FROM Student s 
+JOIN Department d ON s.dept_id = d.dept_id; -- 2. List students who got grade 'A' 
+SELECT s.student_name, c.course_name, e.grade 
+FROM Enrollment e 
+JOIN Student s ON e.student_id = s.student_id 
+JOIN Course c ON e.course_id = c.course_id 
+WHERE e.grade = 'A'; -- 3. Count number of students per department 
+SELECT d.dept_name, COUNT(s.student_id) AS total_students 
+FROM Department d 
+LEFT JOIN Student s ON d.dept_id = s.dept_id 
+GROUP BY d.dept_name; -- 4. Display students born a er 2002 
+SELECT student_name, dob 
+FROM Student 
+WHERE YEAR(dob) > 2002; -- 5. Find average course credits 
+SELECT AVG(credits) AS avg_credits FROM Course; -- 6. Display students whose name starts with 'S' 
+SELECT * FROM Student WHERE student_name LIKE 'S%'; -- 7. Use Set Operator: UNION 
+SELECT student_name AS name FROM Student 
+UNION 
+SELECT course_name AS name FROM Course; -- 8. Update a student’s email 
+UPDATE Student SET email = 'sahil_sangle@gmail.com' WHERE student_id = 1; -- 9. Delete a specific enrollment 
+DELETE FROM Enrollment WHERE enroll_id = 4; -- 10. Use func on and operator example 
+SELECT student_name, YEAR(CURDATE()) - YEAR(dob) AS age 
+FROM Student 
+WHERE gender = 'Male' AND dept_id = 1;
